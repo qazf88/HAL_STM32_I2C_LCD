@@ -1,0 +1,15 @@
+{
+  "name": "HAL_STM32_I2C_LCD",
+  "keywords": "LCD, STM32, I2C, HAL",
+  "description": "Library for I2C LCD displays",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/qazf88/HAL_STM32_I2C_LCD"
+  },
+  "frameworks": "stm32cube",
+  "platforms":
+  [
+    "stm32"
+  ]
+}
