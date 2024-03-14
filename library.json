@@ -1,14 +1,23 @@
 {
   "name": "HAL_STM32_I2C_LCD",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": "LCD, STM32, I2C, HAL",
-  "description": "Library for I2C LCD displays",
+  "description": "This library is a driver for the I2C LCD display based on the PCF8574 I2C I/O expander",
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/qazf88/HAL_STM32_I2C_LCD"
+    "url": "https://github.com/qazf88/HAL_STM32_I2C_LCD.git"
   },
+  "authors":
+  [
+    {
+      "name": "qazf",
+      "url": "https://qazf.com.ua",
+      "maintainer": true
+    }
+  ],
   "license": "MIT",
+  "homepage": "https://qazf.com.ua/lcd1602-i2c-stm32/",
   "frameworks": "stm32cube",
   "platforms":
   [
