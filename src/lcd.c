@@ -3,19 +3,42 @@
 #include <inttypes.h>
 #include "stdlib.h"
 
-#define BACKLIGHT (1 << 3)
-#define RS (1 << 0)
-#define EN (1 << 2)
 #define LCD_DELAY_MS 5
+
+#define BACKLIGHT 0x08
+#define NOBACKLIGHT 0x00
+
+#define EN 0x04
+#define RS 0x01
+
+#define CLEAR_DISPLAY 0x01
+#define GO_HOME 0x02
+#define CONTROL 0x08
+
+#define DISPLAY_ON 0x04
+#define DISPLAY_OFF 0x00
+#define CURSOR_ON 0x02
+#define CURSOR_OFF 0x00
+#define BLINK_ON 0x01
+#define BLINK_OFF 0x00
+
+#define DEFAULT_COLUMNS 16
+#define DEFAULT_ROWS 2
 
 uint8_t _addr;
 uint8_t _backlight = BACKLIGHT;
+uint8_t _columns = DEFAULT_COLUMNS;
+uint8_t _row = DEFAULT_ROWS;
+uint8_t _display = DISPLAY_ON;
+uint8_t _cursor = CURSOR_OFF;
+uint8_t _blink = BLINK_OFF;
 
 I2C_HandleTypeDef *i2c;
 
 volatile uint32_t wite_time = 0;
 volatile uint32_t last_send_time = 0;
 
+// Send data to the display
 HAL_StatusTypeDef send(uint8_t data, uint8_t cmd)
 {
 	HAL_StatusTypeDef res;
@@ -27,7 +50,7 @@ HAL_StatusTypeDef send(uint8_t data, uint8_t cmd)
 
 	for (;;)
 	{
-		res = HAL_I2C_IsDeviceReady(&hi2c1, _addr, 1,
+		res = HAL_I2C_IsDeviceReady(i2c, _addr, 1,
 									HAL_MAX_DELAY);
 		if (res == HAL_OK)
 			break;
@@ -37,93 +60,149 @@ HAL_StatusTypeDef send(uint8_t data, uint8_t cmd)
 	uint8_t lo = (data << 4) & 0xF0;
 
 	uint8_t data_arr[4];
-	data_arr[0] = up | cmd | _backlight | En;
+	data_arr[0] = up | cmd | _backlight | EN;
 	data_arr[1] = up | cmd | _backlight;
-	data_arr[2] = lo | cmd | _backlight | En;
+	data_arr[2] = lo | cmd | _backlight | EN;
 	data_arr[3] = lo | cmd | _backlight;
 
-	res = HAL_I2C_Master_Transmit(&hi2c1, _addr, data_arr,
+	res = HAL_I2C_Master_Transmit(i2c, _addr, data_arr,
 								  sizeof(data_arr), HAL_MAX_DELAY);
 	last_send_time = HAL_GetTick();
 	return res;
 }
 
-void send_command(uint8_t cmd)
+// Send command to the display
+HAL_StatusTypeDef send_command(uint8_t cmd)
 {
-	send(cmd, 0);
-	wite_time = 5;
+	HAL_StatusTypeDef res = send(cmd, 0);
+	if (res == HAL_OK)
+	{
+		wite_time = 5;
+	}
+	return res;
 }
 
-void send_data(uint8_t data)
+// Send data to the display
+HAL_StatusTypeDef send_data(uint8_t data)
 {
-	send(data, Rs);
+	return send(data, RS);
 }
 
-void init(I2C_HandleTypeDef *i2c, uint8_t lcd_addr)
+// Initialize the display
+HAL_StatusTypeDef init(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr)
 {
-	i2c = i2c;
+	i2c = _i2c;
 	_addr = (lcd_addr << 1);
-	// 4-bit mode, 2 lines, 5x7 format
-	send_command(0b00110000);
-	// display & cursor home (keep this!)
-	send_command(0b00000010);
-	// display on, right shift, underline off, blink off
-	send_command(0b00001100);
-	// clear display (optional here)
-	send_command(0b00000001);
+
+	while (HAL_GetTick() < 50)
+	{
+		HAL_Delay(1);
+	}
+
+	HAL_StatusTypeDef res = HAL_OK;
+	res += send_command(0b00110000);
+	res += send_command(0b00110000);
+	res += send_command(0b00110000);
+
+	res += send_command(GO_HOME);
+	res += send_command(CONTROL | _display | _cursor | _blink);
+	res += send_command(CLEAR_DISPLAY);
+
+	return res;
 }
 
-void write_str(char *str)
+// Initialize the display with custom size
+HAL_StatusTypeDef init_custom(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr, uint8_t column, uint8_t rows){
+	_columns = column;
+	_row = rows;
+	return init(_i2c, lcd_addr);
+}
+
+// Clear the display
+HAL_StatusTypeDef clear()
 {
+	return send_command(CLEAR_DISPLAY);
+}
+
+// Set cursor to the home position 0, 0
+HAL_StatusTypeDef home()
+{
+	return send_command(GO_HOME);
+}
+
+// Set cursor to the specified position
+HAL_StatusTypeDef set_pos(uint8_t column, uint8_t row)
+{
+	uint8_t row_offsets[] = {0x00, 0x40, 0x14, 0x54};
+	if (row > _row)
+	{
+		row = _row - 1;
+	}
+
+	return send_command(0x80 | (column + row_offsets[row]));
+}
+
+// Turn the backlight on or off
+HAL_StatusTypeDef backlight(uint8_t state)
+{
+	if (state == 1)
+	{
+		_backlight = BACKLIGHT;
+	}
+	else
+	{
+		_backlight = NOBACKLIGHT;
+	}
+	return send_command(0);
+}
+
+// Turn the cursor on or off
+HAL_StatusTypeDef cursor(uint8_t cursor)
+{
+	_cursor = cursor;
+	return send_command(CONTROL | _display | _cursor | _blink);
+}
+
+// Turn the cursor blink on or off
+HAL_StatusTypeDef blink(uint8_t blink)
+{
+	_blink = blink;
+	return send_command(CONTROL | _display | _cursor | _blink);
+}
+
+// Turn the display off
+HAL_StatusTypeDef LCD_off()
+{
+	_backlight = NOBACKLIGHT;
+	return send_command(CONTROL);
+}
+
+// Turn the display on
+HAL_StatusTypeDef LCD_on()
+{
+	_backlight = BACKLIGHT;
+	return send_command(CONTROL | _display | _cursor | _blink);
+}
+
+// Write a string to the display
+HAL_StatusTypeDef write_str(char *str)
+{
+	HAL_StatusTypeDef res = HAL_OK;
 	while (*str)
 	{
-		send_data((uint8_t)(*str));
+		res += send_data((uint8_t)(*str));
 		str++;
 	}
+	return res;
 }
 
-void write_data(uint8_t *data, size_t size)
+// Write data to the display
+HAL_StatusTypeDef write_data(uint8_t *data, size_t size)
 {
+	HAL_StatusTypeDef res = HAL_OK;
 	for (size_t i = 0; i < size; i++)
 	{
-		send_data(data[i]);
+		res += send_data(data[i]);
 	}
+	return res;
 }
-
-void set_cursor(uint8_t column, uint8_t row)
-{
-	column = (row == 0 ? column | 0x80 : column | 0xc0);
-	send_command(column);
-}
-
-void clear()
-{
-	send_command(0x01);
-}
-
- void backlight(uint8_t state){
-	 if (state == 1)
-	 {
-		 _backlight = BACKLIGHT;
-	 }
-	 else
-	 {
-		 _backlight = LCD_NOBACKLIGHT;
-	 }
-	 send_command(0);
- }
-
- void home(){
-	 send_command(0x02);
- }
-
- void LCD_off(){
-	_backlight = LCD_NOBACKLIGHT;
-	 send_command(0x08);
- }
-
- void LCD_on(){
-	_backlight = BACKLIGHT;
-	 send_command(0x0C);
- }
- 
