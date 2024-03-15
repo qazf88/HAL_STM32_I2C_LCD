@@ -145,13 +145,13 @@ HAL_StatusTypeDef set_pos(uint8_t column, uint8_t row)
 // Turn the backlight on or off
 HAL_StatusTypeDef backlight(uint8_t state)
 {
-	if (state == 1)
+	if (state == 0)
 	{
-		_backlight = BACKLIGHT;
+		_backlight = NOBACKLIGHT;
 	}
 	else
 	{
-		_backlight = NOBACKLIGHT;
+		_backlight = BACKLIGHT;
 	}
 	return send_command(0);
 }
@@ -159,14 +159,30 @@ HAL_StatusTypeDef backlight(uint8_t state)
 // Turn the cursor on or off
 HAL_StatusTypeDef cursor(uint8_t cursor)
 {
-	_cursor = cursor;
+	if (cursor == 0)
+	{
+		_cursor = CURSOR_OFF;
+	}
+	else
+	{
+		_cursor = CURSOR_ON;
+	}
+
 	return send_command(CONTROL | _display | _cursor | _blink);
 }
 
 // Turn the cursor blink on or off
 HAL_StatusTypeDef blink(uint8_t blink)
 {
-	_blink = blink;
+	if (blink == 0)
+	{
+		_blink = BLINK_OFF;
+	}
+	else
+	{
+		_blink = BLINK_ON;
+	}
+
 	return send_command(CONTROL | _display | _cursor | _blink);
 }
 

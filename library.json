@@ -1,6 +1,6 @@
 {
   "name": "HAL_STM32_I2C_LCD",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "keywords": "LCD, STM32, I2C, HAL",
   "description": "This library is a driver for the I2C LCD display based on the PCF8574 I2C I/O expander",
   "repository":
