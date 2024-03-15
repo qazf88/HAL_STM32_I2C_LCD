@@ -1,4 +1,5 @@
-`HAL_STM32_I2C_LCD`
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/qazf/library/HAL_STM32_I2C_LCD.svg)](https://registry.platformio.org/libraries/qazf/HAL_STM32_I2C_LCD)  
+`HAL_STM32_I2C_LCD` 
 
 ## Description
 This library is a driver for the I2C LCD display based on the PCF8574 I2C I/O expander. It is designed to work with the STM32 HAL libraries.
@@ -12,7 +13,7 @@ Or you can use STMCubeMX project in PlatformIO [STM32CubeMX PlatformIO and VSCod
 And add to `platformio.ini`:
 
 ```
-lib_deps = qazf/HAL_STM32_I2C_LCD@^1
+lib_deps = qazf/HAL_STM32_I2C_LCD@^1.0.0
 ```
 or
 ```
