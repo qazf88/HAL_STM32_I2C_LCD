@@ -89,7 +89,7 @@ HAL_StatusTypeDef send_data(uint8_t data)
 }
 
 // Initialize the display
-HAL_StatusTypeDef init(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr)
+HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr)
 {
 	i2c = _i2c;
 	_addr = (lcd_addr << 1);
@@ -112,26 +112,26 @@ HAL_StatusTypeDef init(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr)
 }
 
 // Initialize the display with custom size
-HAL_StatusTypeDef init_custom(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr, uint8_t column, uint8_t rows){
+HAL_StatusTypeDef LCD_init_custom(I2C_HandleTypeDef *_i2c, uint8_t lcd_addr, uint8_t column, uint8_t rows){
 	_columns = column;
 	_row = rows;
-	return init(_i2c, lcd_addr);
+	return LCD_init(_i2c, lcd_addr);
 }
 
 // Clear the display
-HAL_StatusTypeDef clear()
+HAL_StatusTypeDef LCD_clear()
 {
 	return send_command(CLEAR_DISPLAY);
 }
 
 // Set cursor to the home position 0, 0
-HAL_StatusTypeDef home()
+HAL_StatusTypeDef LCD_home()
 {
 	return send_command(GO_HOME);
 }
 
 // Set cursor to the specified position
-HAL_StatusTypeDef set_pos(uint8_t column, uint8_t row)
+HAL_StatusTypeDef LCD_set_pos(uint8_t column, uint8_t row)
 {
 	uint8_t row_offsets[] = {0x00, 0x40, 0x14, 0x54};
 	if (row > _row)
@@ -143,7 +143,7 @@ HAL_StatusTypeDef set_pos(uint8_t column, uint8_t row)
 }
 
 // Turn the backlight on or off
-HAL_StatusTypeDef backlight(uint8_t state)
+HAL_StatusTypeDef LCD_backlight(uint8_t state)
 {
 	if (state == 0)
 	{
@@ -157,7 +157,7 @@ HAL_StatusTypeDef backlight(uint8_t state)
 }
 
 // Turn the cursor on or off
-HAL_StatusTypeDef cursor(uint8_t cursor)
+HAL_StatusTypeDef LCD_cursor(uint8_t cursor)
 {
 	if (cursor == 0)
 	{
@@ -172,7 +172,7 @@ HAL_StatusTypeDef cursor(uint8_t cursor)
 }
 
 // Turn the cursor blink on or off
-HAL_StatusTypeDef blink(uint8_t blink)
+HAL_StatusTypeDef LCD_blink(uint8_t blink)
 {
 	if (blink == 0)
 	{
@@ -201,7 +201,7 @@ HAL_StatusTypeDef LCD_on()
 }
 
 // Write a string to the display
-HAL_StatusTypeDef write_str(char *str)
+HAL_StatusTypeDef LCD_write_str(char *str)
 {
 	HAL_StatusTypeDef res = HAL_OK;
 	while (*str)
@@ -213,7 +213,7 @@ HAL_StatusTypeDef write_str(char *str)
 }
 
 // Write data to the display
-HAL_StatusTypeDef write_data(uint8_t *data, size_t size)
+HAL_StatusTypeDef LCD_write_data(uint8_t *data, size_t size)
 {
 	HAL_StatusTypeDef res = HAL_OK;
 	for (size_t i = 0; i < size; i++)

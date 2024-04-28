@@ -13,7 +13,7 @@ Or you can use STMCubeMX project in PlatformIO [STM32CubeMX PlatformIO and VSCod
 And add to `platformio.ini`:
 
 ```
-lib_deps = qazf/HAL_STM32_I2C_LCD@^1.0.0
+lib_deps = qazf/HAL_STM32_I2C_LCD@^2
 ```
 or
 ```
