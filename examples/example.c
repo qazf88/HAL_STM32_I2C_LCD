@@ -40,10 +40,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // set I2C and disolay adress
-  init(&hi2c1, 0x27);
+  LCD_init(&hi2c1, 0x27);
 
   uint8_t data[] = "Hello, World!";
-  write_str((char *)data);
+  LCD_write_str((char *)data);
 
   /* USER CODE END 2 */
 
@@ -59,12 +59,12 @@ int main(void)
     {
       timer = HAL_GetTick();
       counter++;
-      set_pos(0, 1);
+      LSD_set_pos(0, 1);
 
       char num[10];
       sprintf(num, "%d", counter);
 
-      write_str(num);
+      LCD_write_str(num);
     }
     /* USER CODE END WHILE */
 
